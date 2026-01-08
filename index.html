@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Hub - Dashboard</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+
+        /* --- BARRA LATERAL --- */
+        .sidebar {
+            width: 280px;
+            background-color: #ffffff;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        .sidebar h2 {
+            color: #007bff;
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            padding: 18px;
+            margin-bottom: 12px;
+            border: none;
+            border-radius: 10px;
+            background-color: #007bff;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: left;
+        }
+
+        .nav-btn:hover { background-color: #0056b3; transform: translateX(8px); }
+
+        /* --- ÁREA PRINCIPAL --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            animation: fadeIn 0.4s;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- PLACAR PADRONIZADO --- */
+        .score-placar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid #eee;
+        }
+        .score-item span { display: block; font-size: 2.5em; font-weight: bold; color: #007bff; }
+        .score-item p { margin: 5px 0 0; color: #666; font-weight: bold; }
+
+        .opcoes { display: flex; justify-content: space-around; margin-top: 20px; }
+        .escolha-btn {
+            padding: 20px; border: none; border-radius: 12px;
+            font-size: 2.5em; cursor: pointer; background-color: #eee;
+            transition: 0.2s;
+        }
+        .escolha-btn:hover { background-color: #ddd; transform: scale(1.1); }
+
+        .resultado-mensagem {
+            font-size: 1.2em; font-weight: bold; padding: 15px;
+            border-radius: 8px; margin: 20px 0; min-height: 60px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* --- GRID JOGO DA VELHA --- */
+        .grid-velha {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 15px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+        .celula {
+            width: 100px; height: 100px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.5em; font-weight: bold; cursor: pointer;
+            transition: 0.2s;
+        }
+        .celula:hover { background-color: #e2e2e2; }
+
+        .hidden { display: none; }
+        .resultado-vitoria { background-color: #d4edda; color: #155724; }
+        .resultado-derrota { background-color: #f8d7da; color: #721c24; }
+        .resultado-empate { background-color: #fff3cd; color: #856404; }
+        
+        .btn-reset {
+            background-color: #dc3545; color: white; border: none;
+            padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>🎮 Game Hub</h2>
+        <button class="nav-btn" onclick="trocarJogo('jokenpo')">Pedra, Papel, Tesoura</button>
+        <button class="nav-btn" onclick="trocarJogo('velha')">Jogo da Velha (vs PC)</button>
+        <div style="margin-top: auto; font-size: 0.8em; color: #999;">ADS Portfólio - Arthur © 2025</div>
+    </div>
+
+    <div class="main-content">
+        
+        <div id="jokenpo" class="container">
+            <h1>Pedra, Papel e Tesoura</h1>
+            <div class="score-placar">
+                <div class="score-item"><span id="score-vc">0</span><p>Você</p></div>
+                <div class="score-item"><span id="score-pc">0</span><p>PC</p></div>
+            </div>
+            <div class="opcoes">
+                <button class="escolha-btn" onclick="jogarPPT('pedra')">✊</button>
+                <button class="escolha-btn" onclick="jogarPPT('papel')">✋</button>
+                <button class="escolha-btn" onclick="jogarPPT('tesoura')">✌️</button>
+            </div>
+            <div id="msg-ppt" class="resultado-mensagem">Escolha para começar!</div>
+            <button class="btn-reset" onclick="resetPPT()">Zerar Placar</button>
+        </div>
+
+        <div id="velha" class="container hidden">
+            <h1>Jogo da Velha vs PC</h1>
+            <div class="score-placar">
+                <div class="score-item"><span id="v-score-vc">0</span><p>Você (X)</p></div>
+                <div class="score-item"><span id="v-score-pc">0</span><p>PC (O)</p></div>
+            </div>
+            <div id="msg-velha" class="resultado-mensagem">Sua vez! Marque um campo.</div>
+            <div class="grid-velha">
+                <div class="celula" onclick="usuarioClique(0)"></div>
+                <div class="celula" onclick="usuarioClique(1)"></div>
+                <div class="celula" onclick="usuarioClique(2)"></div>
+                <div class="celula" onclick="usuarioClique(3)"></div>
+                <div class="celula" onclick="usuarioClique(4)"></div>
+                <div class="celula" onclick="usuarioClique(5)"></div>
+                <div class="celula" onclick="usuarioClique(6)"></div>
+                <div class="celula" onclick="usuarioClique(7)"></div>
+                <div class="celula" onclick="usuarioClique(8)"></div>
+            </div>
+            <button class="btn-reset" onclick="resetVelha()">Reiniciar Jogo</button>
+        </div>
+
+    </div>
+
+    <script>
+        function trocarJogo(jogo) {
+            document.getElementById('jokenpo').classList.add('hidden');
+            document.getElementById('velha').classList.add('hidden');
+            document.getElementById(jogo).classList.remove('hidden');
+        }
+
+        // --- LÓGICA PPT ---
+        let pVc = 0; let pPc = 0;
+        function jogarPPT(vc) {
+            const itens = ['pedra', 'papel', 'tesoura'];
+            const pc = itens[Math.floor(Math.random() * 3)];
+            const msg = document.getElementById('msg-ppt');
+            
+            if (vc === pc) {
+                msg.innerText = `Empate! Ambos: ${vc}`;
+                msg.className = "resultado-mensagem resultado-empate";
+            } else if ((vc==='pedra' && pc==='tesoura') || (vc==='papel' && pc==='pedra') || (vc==='tesoura' && pc==='papel')) {
+                pVc++; msg.innerText = `Ganhou! ${vc} vence ${pc}`;
+                msg.className = "resultado-mensagem resultado-vitoria";
+            } else {
+                pPc++; msg.innerText = `Perdeu! ${pc} vence ${vc}`;
+                msg.className = "resultado-mensagem resultado-derrota";
+            }
+            document.getElementById('score-vc').innerText = pVc;
+            document.getElementById('score-pc').innerText = pPc;
+        }
+        function resetPPT() { pVc = 0; pPc = 0; document.getElementById('score-vc').innerText = 0; document.getElementById('score-pc').innerText = 0; document.getElementById('msg-ppt').innerText = "Placar zerado!"; msg.className = "resultado-mensagem"; }
+
+        // --- LÓGICA JOGO DA VELHA (vs PC) ---
+        let quadro = ['', '', '', '', '', '', '', '', ''];
+        let jogoAtivo = true;
+        let v_pVc = 0; let v_pPc = 0;
+
+        function usuarioClique(i) {
+            if (quadro[i] !== '' || !jogoAtivo) return;
+            
+            fazerJogada(i, 'X');
+            if (jogoAtivo) {
+                document.getElementById('msg-velha').innerText = "PC pensando...";
+                setTimeout(jogadaPC, 600);
+            }
+        }
+
+        function jogadaPC() {
+            if (!jogoAtivo) return;
+            let disponiveis = quadro.map((v, i) => v === '' ? i : null).filter(v => v !== null);
+            if (disponiveis.length > 0) {
+                let escolha = disponiveis[Math.floor(Math.random() * disponiveis.length)];
+                fazerJogada(escolha, 'O');
+                if(jogoAtivo) document.getElementById('msg-velha').innerText = "Sua vez!";
+            }
+        }
+
+        function fazerJogada(i, player) {
+            quadro[i] = player;
+            const celulas = document.querySelectorAll('.celula');
+            celulas[i].innerText = player;
+            celulas[i].style.color = player === 'X' ? '#007bff' : '#dc3545';
+            verificarStatus();
+        }
+
+        function verificarStatus() {
+            const combos = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for (let c of combos) {
+                if (quadro[c[0]] && quadro[c[0]] === quadro[c[1]] && quadro[c[0]] === quadro[c[2]]) {
+                    anunciarVencedor(quadro[c[0]]);
+                    return;
+                }
+            }
+            if (!quadro.includes('')) anunciarVencedor('empate');
+        }
+
+        function anunciarVencedor(venc) {
+            jogoAtivo = false;
+            const msg = document.getElementById('msg-velha');
+            if (venc === 'X') {
+                v_pVc++;
+                msg.innerText = "Você venceu!";
+                msg.className = "resultado-mensagem resultado-vitoria";
+            } else if (venc === 'O') {
+                v_pPc++;
+                msg.innerText = "O Computador venceu!";
+                msg.className = "resultado-mensagem resultado-derrota";
+            } else {
+                msg.innerText = "Empate!";
+                msg.className = "resultado-mensagem resultado-empate";
+            }
+            document.getElementById('v-score-vc').innerText = v_pVc;
+            document.getElementById('v-score-pc').innerText = v_pPc;
+        }
+
+        function resetVelha() {
+            quadro = ['', '', '', '', '', '', '', '', ''];
+            jogoAtivo = true;
+            document.getElementById('msg-velha').innerText = "Sua vez! Marque um campo.";
+            document.getElementById('msg-velha').className = "resultado-mensagem";
+            document.querySelectorAll('.celula').forEach(c => c.innerText = '');
+        }
+    </script>
+</body>
+</html>
